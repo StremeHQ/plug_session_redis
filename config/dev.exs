@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :plug_session_redis, :config,
   name: :redis_sessions,

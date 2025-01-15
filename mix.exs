@@ -5,7 +5,7 @@ defmodule PlugSessionRedis.Mixfile do
     [
       app: :plug_session_redis,
       version: "0.1.0",
-      elixir: "~> 1.0",
+      elixir: "~> 1.9",
       description: description(),
       package: package(),
       build_embedded: Mix.env() == :prod,
