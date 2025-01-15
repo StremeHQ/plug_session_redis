@@ -18,7 +18,10 @@ defmodule PlugSessionRedis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [mod: {PlugSessionRedis, []}, applications: []]
+    [
+      mod: {PlugSessionRedis, []},
+      extra_applications: [:logger]
+    ]
   end
 
   defp description do
