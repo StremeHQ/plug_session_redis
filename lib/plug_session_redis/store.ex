@@ -35,11 +35,12 @@ defmodule PlugSessionRedis.Store do
   end
 
   def get(_conn, sid, {table, _, serializer, path}) do
-    case :poolboy.transaction(table, fn(client) ->
-      :redo.cmd(client, ["GET", path.(sid)])
-    end) do
+    case :poolboy.transaction(table, fn client ->
+           :redo.cmd(client, ["GET", path.(sid)])
+         end) do
       :undefined ->
         {nil, %{}}
+
       data ->
         {sid, serializer.decode!(data)}
     end
@@ -50,16 +51,18 @@ defmodule PlugSessionRedis.Store do
   end
 
   def put(_conn, sid, data, {table, _, serializer, path}) do
-    :poolboy.transaction(table, fn(client) ->
+    :poolboy.transaction(table, fn client ->
       :redo.cmd(client, ["SET", path.(sid), serializer.encode!(data)])
     end)
+
     sid
   end
 
   def delete(_conn, sid, {table, _, _, path}) do
-    :poolboy.transaction(table, fn(client) ->
+    :poolboy.transaction(table, fn client ->
       :redo.cmd(client, ["DEL", path.(sid)])
     end)
+
     :ok
   end
 
@@ -67,13 +70,15 @@ defmodule PlugSessionRedis.Store do
 
   @max_tries 5
   defp put_new(data, {table, ttl, serializer, path}, counter \\ 0)
-      when counter < @max_tries do
-    sid = :crypto.strong_rand_bytes(96) |> Base.encode64
-    case :poolboy.transaction(table, fn(client) ->
-      store_data_with_ttl(client, ttl, path.(sid), serializer.encode!(data))
-    end) do
+       when counter < @max_tries do
+    sid = :crypto.strong_rand_bytes(96) |> Base.encode64()
+
+    case :poolboy.transaction(table, fn client ->
+           store_data_with_ttl(client, ttl, path.(sid), serializer.encode!(data))
+         end) do
       "OK" ->
         sid
+
       _ ->
         put_new(data, {table, ttl, serializer, path}, counter + 1)
     end
@@ -82,6 +87,7 @@ defmodule PlugSessionRedis.Store do
   defp store_data_with_ttl(client, :infinite, sid, bin) do
     :redo.cmd(client, ["SET", sid, bin])
   end
+
   defp store_data_with_ttl(client, ttl, sid, bin) do
     [ret, _] = :redo.cmd(client, [["SET", sid, bin], ["EXPIRE", sid, ttl]])
     ret

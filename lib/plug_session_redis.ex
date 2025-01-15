@@ -16,9 +16,11 @@ defmodule PlugSessionRedis do
 
   defp child_spec(pool_name, pool_args, redis_args) do
     strategy = Keyword.get(pool_args, :strategy, :fifo)
-    pool_args = [strategy: strategy, name: {:local, pool_name}, worker_module: PlugSessionRedis.Worker] ++ pool_args
+
+    pool_args =
+      [strategy: strategy, name: {:local, pool_name}, worker_module: PlugSessionRedis.Worker] ++
+        pool_args
 
     :poolboy.child_spec(pool_name, pool_args, redis_args)
   end
-
 end
