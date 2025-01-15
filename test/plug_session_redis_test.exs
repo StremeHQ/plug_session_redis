@@ -9,7 +9,7 @@ defmodule PlugSessionRedisTest do
     plug(Plug.Session,
       store: PlugSessionRedis.Store,
       key: "_my_app_key",
-      table: Application.get_env(:plug_session_redis, :config)[:name]
+      table: Application.compile_env(:plug_session_redis, [:config, :name])
     )
 
     plug(:fetch_session)
@@ -36,7 +36,7 @@ defmodule PlugSessionRedisTest do
     end
   end
 
-  @poolboy_name Application.get_env(:plug_session_redis, :config)[:name]
+  @poolboy_name Application.compile_env(:plug_session_redis, [:config, :name])
 
   test "creates a new session" do
     conn = conn(:get, "/foo") |> SampleApp.call([])
